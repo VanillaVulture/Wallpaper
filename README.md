@@ -1,5 +1,6 @@
-Used To change the wallpaper on heavily AdminBlocked computers,
-To use DefaultAHSwallpaper.ps1, just copy the code and paste it in PowerShell and hit enter and wait about a second
+Used To change the wallpaper on heavily AdminBlocked computers.
+
+To use DefaultAHSwallpaper.ps1, just copy the code and paste it in PowerShell and hit enter and wait about a second.
 
 
 To use RestoreWallpaper.ps1
