@@ -1,39 +1,34 @@
-$LangCode = "0411" # Japanese Input Language Code
+# Define the Japanese language code
+$LangCode = "0411"  # Japanese (Microsoft IME)
 
-# Get the current input methods
-$CurrentLangs = Get-WinUserLanguageList
-
-# Check if Japanese is already added
-if ($CurrentLangs.LanguageTag -notcontains "ja-JP") {
-    Write-Host "Adding Japanese (ja-JP) as a new input method..."
-    
-    # Add Japanese language to user input list
-    $CurrentLangs += New-WinUserLanguageList "ja-JP"
-    Set-WinUserLanguageList -LanguageList $CurrentLangs -Force
-} else {
-    Write-Host "Japanese (ja-JP) is already installed."
-}
-
-# Change the default input method to Japanese (Microsoft IME)
+# Set the keyboard layout in the user registry
 $RegPath = "HKCU:\Keyboard Layout\Preload"
 $CurrentLayouts = Get-ItemProperty -Path $RegPath
 
-if ($CurrentLayouts -match $LangCode) {
-    Write-Host "Japanese keyboard layout is already set."
-} else {
-    # Find the first available key slot and set Japanese layout
-    $Slot = ($CurrentLayouts.PSObject.Properties.Name | Measure-Object).Count + 1
-    Set-ItemProperty -Path $RegPath -Name "$Slot" -Value $LangCode
-    Write-Host "Japanese input method added to keyboard layouts."
+# Check if Japanese is already in the list
+$Exists = $false
+foreach ($Property in $CurrentLayouts.PSObject.Properties) {
+    if ($Property.Value -eq $LangCode) {
+        $Exists = $true
+        break
+    }
 }
 
-# Force update the keyboard layout without requiring a reboot
-$LayoutPath = "HKCU:\Control Panel\International\User Profile"
-Set-ItemProperty -Path $LayoutPath -Name "InputMethodOverride" -Value $LangCode
-Write-Host "Keyboard layout switched to Japanese successfully."
+if (-not $Exists) {
+    # Find the next available key slot and add Japanese layout
+    $Slot = ($CurrentLayouts.PSObject.Properties.Name | Measure-Object).Count + 1
+    Set-ItemProperty -Path $RegPath -Name "$Slot" -Value $LangCode
+    Write-Host "Japanese (0411) keyboard layout added."
+} else {
+    Write-Host "Japanese keyboard layout already exists."
+}
 
-# Restart Windows Explorer to apply changes immediately
+# Change the active input method
+$RegInputPath = "HKCU:\Control Panel\International\User Profile"
+Set-ItemProperty -Path $RegInputPath -Name "InputMethodOverride" -Value $LangCode
+
+# Restart Windows Explorer to apply changes
 Stop-Process -Name "explorer" -Force
 Start-Process "explorer"
 
-Write-Host "Language change complete! You may need to log out and log back in for full effect."
+Write-Host "Keyboard layout switched to Japanese (Microsoft IME). You may need to log out and log back in for full effect."
